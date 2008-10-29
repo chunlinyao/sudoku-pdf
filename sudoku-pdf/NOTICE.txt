@@ -1,0 +1,12 @@
+Sudoku pdf
+
+Copyright (C) 2008 by Yao Chunlin.
+
+This product includes itext 
+http://www.lowagie.com/iText/
+Copyright (C) by Bruno Lowagie.
+ 
+
+This product includes sudokuexplainer
+http://diuf.unifr.ch/people/juillera/Sudoku/Sudoku.html
+Copyright (C) by Nicolas Juillerat
