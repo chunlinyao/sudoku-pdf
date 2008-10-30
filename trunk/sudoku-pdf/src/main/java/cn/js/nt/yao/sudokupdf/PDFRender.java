@@ -20,7 +20,6 @@
  * $Revision$
  * $Date$
  */
-
 package cn.js.nt.yao.sudokupdf;
 
 import com.lowagie.text.Document;

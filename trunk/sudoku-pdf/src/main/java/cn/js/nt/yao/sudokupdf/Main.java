@@ -23,6 +23,9 @@
 package cn.js.nt.yao.sudokupdf;
 
 import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
@@ -40,13 +43,12 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class Main {
 
-    private PDFRender render = new PDFRender(new A4Layout());
-
     Main() {
     }
 
     public static void main(String[] args) {
         Main m = new Main();
+
         try {
             LookAndFeel laf = new NimbusLookAndFeel();
             UIManager.setLookAndFeel(laf);
@@ -58,6 +60,8 @@ public class Main {
     }
 
     public File createPDF(List<PrintRecord> sudokuList) {
+        PDFRender render = new PDFRender(new A4Layout());
+
         render.setData(sudokuList);
 
         return render.process();
@@ -72,6 +76,9 @@ public class Main {
                 main.setLocation(200, 200);
                 main.pack();
                 main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                main.setLocation((int) (screenSize.getWidth() - main.getWidth()) / 2,
+                        (int) (screenSize.getHeight() - main.getHeight()) / 2);
                 main.setVisible(true);
             }
         });
