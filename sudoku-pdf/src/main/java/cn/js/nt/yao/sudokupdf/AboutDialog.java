@@ -20,30 +20,27 @@
  * $Revision$
  * $Date$
  */
-
 package cn.js.nt.yao.sudokupdf;
 
-import com.lowagie.text.Rectangle;
-
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 /**
  *
  * @author yaochunlin
  */
-public abstract class Layout {
-    abstract double getDx();
+final class AboutDialog extends JDialog {
+    public AboutDialog(JFrame owner) {
+        super(owner);
+        init();
+    }
 
-    abstract double getDy();
-
-    abstract Rectangle getPageSize();
-
-    abstract double getScale();
-
-    abstract void postRender(int i, PDFRender render);
-
-    abstract void preRender(int i, PDFRender render);
-
-    abstract void setMode(Mode mode);
-    static enum Mode {SUDOKU, ANSWER;
+    private void init() {
+        getContentPane().setLayout(new BorderLayout());
+        getContentPane().add(new JLabel("Sudoku PDF"));
+        setPreferredSize(new Dimension(300, 150));
     }
 }
