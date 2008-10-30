@@ -64,23 +64,15 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+
 /**
  *
  * @author yaochunlin
  */
 public class MainFrame extends JFrame {
-
+    private static final long serialVersionUID = 1L;
     private Main app;
     private JProgressBar progress;
-
-    MainFrame(Main m) {
-        super("Sudoku PDF - Developed by Yao Chunlin");
-        this.app = m;
-        initParameters();
-        initGUI();
-
-    }
-    private static final long serialVersionUID = 1L;
     private JButton btnPrint;
     private JLabel lblGenerated;
     private JSpinner spnPrintCount;
@@ -91,12 +83,21 @@ public class MainFrame extends JFrame {
     private GeneratorThread generatorThread = null;
     private List<Grid> sudokuList = new ArrayList<Grid>();
 
+    MainFrame(Main m) {
+        super("Sudoku PDF - Developed by Yao Chunlin");
+        this.app = m;
+        initParameters();
+        initGUI();
+    }
+
     private void initButtonPane(JPanel commandPanel) {
         // Command pane
         commandPanel.setLayout(new GridLayout(1, 2));
+
         JPanel pnlGenerate = new JPanel();
         pnlGenerate.setLayout(new FlowLayout(FlowLayout.CENTER));
         commandPanel.add(pnlGenerate);
+
         JPanel pnlClose = new JPanel();
         pnlClose.setLayout(new FlowLayout(FlowLayout.CENTER));
         commandPanel.add(pnlClose);
@@ -104,61 +105,64 @@ public class MainFrame extends JFrame {
         btnPrint.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 12));
         btnPrint.setText("Print");
         btnPrint.setMnemonic(KeyEvent.VK_P);
-        btnPrint.setToolTipText("Print out random Sudoku that matches the given parameters");
+        btnPrint.setToolTipText(
+            "Print out random Sudoku that matches the given parameters");
         btnPrint.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (generatorThread == null) {
-                    generate();
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (generatorThread == null) {
+                        generate();
+                    }
                 }
-            }
-        });
+            });
         pnlGenerate.add(btnPrint);
+
         JButton btnClose = new JButton();
         btnClose.setText("Close");
         btnClose.setMnemonic(KeyEvent.VK_C);
         btnClose.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
-            }
-        });
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    close();
+                }
+            });
         pnlClose.add(btnClose);
     }
 
     private void initGlassPane() {
         // Glass Pane ,disable input when processing
         progress = new JProgressBar();
+
         JPanel statusPane = new JPanel(new GridLayout(1, 4));
         statusPane.setOpaque(true);
         statusPane.add(new JLabel("Please wait..."));
         statusPane.add(progress);
         lblGenerated = new JLabel("");
-        lblGenerated.setToolTipText("<html><body><b>Generated</b>&nbsp; count</body></html>");
+        lblGenerated.setToolTipText(
+            "<html><body><b>Generated</b>&nbsp; count</body></html>");
         statusPane.add(lblGenerated);
+
         JButton cancelButton = new JButton();
         cancelButton.setText("Cancel");
-        cancelButton.setMnemonic(KeyEvent.VK_ESCAPE);
+        cancelButton.setMnemonic(KeyEvent.VK_C);
         cancelButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (generatorThread != null) {
-                    MainFrame.this.stop();
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (generatorThread != null) {
+                        MainFrame.this.stop();
+                    }
                 }
-            }
-        });
+            });
         statusPane.add(cancelButton);
+
         final List<JComponent> enabledWhenBusy = new ArrayList<JComponent>();
-        final BusyGlassPanel busyGlassPanel = new BusyGlassPanel(this, enabledWhenBusy);
+        final BusyGlassPanel busyGlassPanel = new BusyGlassPanel(this,
+                enabledWhenBusy);
 
         busyGlassPanel.setLayout(new BorderLayout());
         busyGlassPanel.setOpaque(false);
         busyGlassPanel.add(statusPane, BorderLayout.SOUTH);
         this.setGlassPane(busyGlassPanel);
-        //this.getContentPane().add(statusPane,BorderLayout.NORTH);
     }
 
     private void initMenu() {
@@ -169,98 +173,109 @@ public class MainFrame extends JFrame {
         mi = fileMenu.add(new JMenuItem("Close"));
         mi.setMnemonic('X');
         mi.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    MainFrame.this.close();
+                }
+            });
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MainFrame.this.close();
-            }
-        });
         final JMenu helpMenu = jMenuBar.add(new JMenu("Help"));
         fileMenu.setMnemonic('H');
         mi = helpMenu.add(new JMenuItem("About"));
         mi.setMnemonic('B');
         mi.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JDialog dialog = new AboutDialog(MainFrame.this);
-                dialog.pack();
-                dialog.setVisible(true);
-            }
-        });
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JDialog dialog = new AboutDialog(MainFrame.this);
+                    dialog.setVisible(true);
+                }
+            });
         this.setJMenuBar(jMenuBar);
     }
 
     private void initParamPane(JPanel paramPanel) {
         // Parameters pane
         paramPanel.setLayout(new BoxLayout(paramPanel, BoxLayout.Y_AXIS));
+
         JPanel symmetryPanel = new JPanel();
         symmetryPanel.setBorder(new TitledBorder("Allowed symmetry types"));
         paramPanel.add(symmetryPanel);
+
         JPanel difficultyPanel = new JPanel();
         difficultyPanel.setBorder(new TitledBorder("Difficulty"));
         paramPanel.add(difficultyPanel);
         // Parameters - Symmetry pane
         symmetryPanel.setLayout(new GridLayout(3, 4));
+
         for (final Symmetry symmetry : Symmetry.values()) {
             final JCheckBox chkSymmetry = new JCheckBox();
             chkSymmetry.setSelected(symmetries.contains(symmetry));
             chkSymmetry.setText(symmetry.toString());
             chkSymmetry.setToolTipText(symmetry.getDescription());
             chkSymmetry.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (chkSymmetry.isSelected()) {
-                        symmetries.add(symmetry);
-                    } else {
-                        symmetries.remove(symmetry);
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (chkSymmetry.isSelected()) {
+                            symmetries.add(symmetry);
+                        } else {
+                            symmetries.remove(symmetry);
+                        }
                     }
-                }
-            });
+                });
             symmetryPanel.add(chkSymmetry);
         }
+
         // Parameters - Difficulty
         difficultyPanel.setLayout(new BorderLayout());
+
         JPanel diffChooserPanel = new JPanel();
-        diffChooserPanel.setLayout(new BoxLayout(diffChooserPanel, BoxLayout.X_AXIS));
+        diffChooserPanel.setLayout(new BoxLayout(diffChooserPanel,
+                BoxLayout.X_AXIS));
         difficultyPanel.add(diffChooserPanel, BorderLayout.NORTH);
+
         final JComboBox selDifficulty = new JComboBox();
+
         for (Difficulty d : Difficulty.values()) {
             selDifficulty.addItem(d);
         }
-        selDifficulty.setToolTipText("Choose the difficulty of the Sudoku to generate");
-        selDifficulty.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
-                difficulty = (Difficulty) selDifficulty.getSelectedItem();
-            }
-        });
+        selDifficulty.setToolTipText(
+            "Choose the difficulty of the Sudoku to generate");
+        selDifficulty.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    difficulty = (Difficulty) selDifficulty.getSelectedItem();
+                }
+            });
         diffChooserPanel.add(selDifficulty);
-        final JRadioButton chkExactDifficulty = new JRadioButton("Exact difficulty");
-        chkExactDifficulty.setToolTipText("Generate a Sudoku with exactly the chosen difficulty");
+
+        final JRadioButton chkExactDifficulty = new JRadioButton(
+                "Exact difficulty");
+        chkExactDifficulty.setToolTipText(
+            "Generate a Sudoku with exactly the chosen difficulty");
         chkExactDifficulty.setMnemonic(KeyEvent.VK_E);
         chkExactDifficulty.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                if (chkExactDifficulty.isSelected()) {
-                    isExact = true;
+                public void actionPerformed(ActionEvent e) {
+                    if (chkExactDifficulty.isSelected()) {
+                        isExact = true;
+                    }
                 }
-            }
-        });
+            });
         diffChooserPanel.add(chkExactDifficulty);
-        final JRadioButton chkMaximumDifficulty = new JRadioButton("Maximum difficulty");
-        chkMaximumDifficulty.setToolTipText("Generate a Sudoku with at most the chosen difficulty");
+
+        final JRadioButton chkMaximumDifficulty = new JRadioButton(
+                "Maximum difficulty");
+        chkMaximumDifficulty.setToolTipText(
+            "Generate a Sudoku with at most the chosen difficulty");
         chkMaximumDifficulty.setMnemonic(KeyEvent.VK_M);
         chkMaximumDifficulty.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                if (chkMaximumDifficulty.isSelected()) {
-                    isExact = false;
+                public void actionPerformed(ActionEvent e) {
+                    if (chkMaximumDifficulty.isSelected()) {
+                        isExact = false;
+                    }
                 }
-            }
-        });
+            });
         diffChooserPanel.add(chkMaximumDifficulty);
+
         ButtonGroup group = new ButtonGroup();
         group.add(chkExactDifficulty);
         group.add(chkMaximumDifficulty);
@@ -276,7 +291,6 @@ public class MainFrame extends JFrame {
     }
 
     private void initGUI() {
-
         initMenu();
         this.setLayout(new BorderLayout());
 
@@ -293,8 +307,8 @@ public class MainFrame extends JFrame {
     private void generate() {
         if (symmetries.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "Please select at least one symmetry", "Generate",
-                    JOptionPane.ERROR_MESSAGE);
+                "Please select at least one symmetry", "Generate",
+                JOptionPane.ERROR_MESSAGE);
 
             return;
         }
@@ -310,23 +324,31 @@ public class MainFrame extends JFrame {
         List<Symmetry> symList = new ArrayList<Symmetry>(symmetries);
 
         if (sudokuList.size() > 0) {
-            String[] options = {"Resume", "Restart", "Cancel"};
-            int result = JOptionPane.showOptionDialog(this, "Resume the previouse job.", "Resume or restart", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+            String[] options = { "Resume", "Restart", "Cancel" };
+            int result = JOptionPane.showOptionDialog(this,
+                    "Resume the previouse job.", "Resume or restart",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+
             switch (result) {
-                case 0:
-                    break;
-                case 1:
-                    sudokuList.clear();
-                    break;
-                case 2:
-                    return;
+            case 0:
+                break;
+
+            case 1:
+                sudokuList.clear();
+
+                break;
+
+            case 2:
+                return;
             }
         }
+
         progress.setMaximum(amount);
         progress.setMinimum(0);
         // Generate grid
-        generatorThread = new GeneratorThread(symList, minDifficulty, maxDifficulty,
-                amount);
+        generatorThread = new GeneratorThread(symList, minDifficulty,
+                maxDifficulty, amount);
         generatorThread.start();
     }
 
@@ -336,25 +358,27 @@ public class MainFrame extends JFrame {
         printPanel.setBorder(new TitledBorder("Print option"));
         printPanel.setLayout(new GridLayout(1, 1));
         paramPanel.add(printPanel, BorderLayout.NORTH);
+
         JLabel lblPrintCount = new JLabel();
         lblPrintCount.setText("Amount of puzzles:");
         printPanel.add(lblPrintCount);
-        spnPrintCount = new JSpinner(new SpinnerNumberModel(4, 1, Integer.MAX_VALUE, 1));
+        spnPrintCount = new JSpinner(new SpinnerNumberModel(4, 1,
+                    Integer.MAX_VALUE, 1));
         spnPrintCount.setValue(amount);
         spnPrintCount.setToolTipText("Amount of puzzles");
         spnPrintCount.addChangeListener(new ChangeListener() {
-
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                amount = (Integer) spnPrintCount.getValue();
-            }
-        });
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    amount = (Integer) spnPrintCount.getValue();
+                }
+            });
         printPanel.add(spnPrintCount);
     }
 
     private void stop() {
         if ((generatorThread != null) && generatorThread.isAlive()) {
             generatorThread.cancel();
+
             try {
                 generatorThread.join();
             } catch (InterruptedException ex) {
@@ -368,36 +392,37 @@ public class MainFrame extends JFrame {
     private void printOut() {
         if (sudokuList.size() >= amount) {
             new Thread() {
+                    @Override
+                    public void run() {
+                        List<PrintRecord> printList = new ArrayList<PrintRecord>();
 
-                @Override
-                public void run() {
-                    List<PrintRecord> printList = new ArrayList<PrintRecord>();
+                        for (Grid g : new ArrayList<Grid>(sudokuList)) {
+                            Grid copy = new Grid();
+                            g.copyTo(copy);
 
-                    for (Grid g : new ArrayList<Grid>(sudokuList)) {
-                        Grid copy = new Grid();
-                        g.copyTo(copy);
+                            Solver solver = new Solver(copy);
+                            Map<Rule, Integer> ruleMap = null;
 
-                        Solver solver = new Solver(copy);
-                        Map<Rule, Integer> ruleMap = null;
+                            try {
+                                solver.rebuildPotentialValues();
+                                ruleMap = solver.solve(null);
+                            } catch (UnsupportedOperationException ex) {
+                            }
 
-                        try {
-                            solver.rebuildPotentialValues();
-                            ruleMap = solver.solve(null);
-                        } catch (UnsupportedOperationException ex) {
+                            PrintRecord pp = new PrintRecord(g, copy, ruleMap);
+                            printList.add(pp);
                         }
 
-                        PrintRecord pp = new PrintRecord(g, copy, ruleMap);
-                        printList.add(pp);
-                    }
+                        File f = app.createPDF(printList);
 
-                    File f = app.createPDF(printList);
-                    try {
-                        java.awt.Desktop.getDesktop().open(f);
-                    } catch (IOException ex) {
-                        Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        try {
+                            java.awt.Desktop.getDesktop().open(f);
+                        } catch (IOException ex) {
+                            Logger.getLogger(MainFrame.class.getName())
+                                  .log(Level.SEVERE, null, ex);
+                        }
                     }
-                }
-            }.start();
+                }.start();
         }
     }
 
@@ -410,7 +435,6 @@ public class MainFrame extends JFrame {
      * Thread that generates a mew grid.
      */
     private class GeneratorThread extends Thread {
-
         private final List<Symmetry> symmetries;
         private final double minDifficulty;
         private final double maxDifficulty;
@@ -420,7 +444,7 @@ public class MainFrame extends JFrame {
         private boolean canceled = false;
 
         public GeneratorThread(List<Symmetry> symmetries, double minDifficulty,
-                double maxDifficulty, int printCount) {
+            double maxDifficulty, int printCount) {
             this.symmetries = symmetries;
             this.minDifficulty = minDifficulty;
             this.maxDifficulty = maxDifficulty;
@@ -436,48 +460,46 @@ public class MainFrame extends JFrame {
         @Override
         public void run() {
             SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    MainFrame.this.getGlassPane().setVisible(true);
-                }
-            });
+                    public void run() {
+                        MainFrame.this.getGlassPane().setVisible(true);
+                    }
+                });
             generator = new Generator();
 
             for (int i = curSize; i < printCount; i++) {
                 final Grid result = generator.generate(symmetries,
                         minDifficulty, maxDifficulty);
                 SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        if (result != null) {
-                            sudokuList.add(result);
-                            lblGenerated.setText(String.format(
-                                    "<html><body>&nbsp;&nbsp;%d&nbsp;<i>Generated</i></body></html>",
-                                    sudokuList.size()));
-                            progress.setValue(sudokuList.size());
+                        public void run() {
+                            if (result != null) {
+                                sudokuList.add(result);
+                                lblGenerated.setText(String.format(
+                                        "<html><body>&nbsp;&nbsp;%d&nbsp;<i>Generated</i></body></html>",
+                                        sudokuList.size()));
+                                progress.setValue(sudokuList.size());
+                            }
                         }
-                    }
-                });
+                    });
+
                 if (this.canceled == true) {
                     break;
                 }
             }
 
             SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    if (MainFrame.this.isVisible()) {
-                        MainFrame.this.printOut();
-                        MainFrame.this.getGlassPane().setVisible(false);
+                    public void run() {
+                        if (MainFrame.this.isVisible()) {
+                            MainFrame.this.printOut();
+                            MainFrame.this.getGlassPane().setVisible(false);
+                        }
                     }
-                }
-            });
+                });
             MainFrame.this.generatorThread = null;
         }
     }
 
     private enum Difficulty {
-
+        
         Easy(1.0, 1.2), Medium(1.3, 1.5), Hard(1.6, 2.5), Fiendish(2.6, 6.0),
         Diabolical(6.1, 11.0);
         private final double maxDificulty;
