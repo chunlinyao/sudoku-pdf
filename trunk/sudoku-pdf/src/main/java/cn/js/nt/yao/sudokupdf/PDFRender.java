@@ -16,7 +16,7 @@
  *  limitations under the License.
  *  under the License.
  * ------------------------------------------------------------------------
- * $Header$
+ * $Id$
  * $Revision$
  * $Date$
  */
@@ -25,9 +25,6 @@ package cn.js.nt.yao.sudokupdf;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.pdf.DefaultFontMapper;
-import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import diuf.sudoku.Grid;
 import java.awt.BasicStroke;
@@ -38,10 +35,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

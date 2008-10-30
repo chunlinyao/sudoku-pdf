@@ -16,7 +16,7 @@
  *  limitations under the License.
  *  under the License.
  * ------------------------------------------------------------------------
- * $Header$
+ * $Id$
  * $Revision$
  * $Date$
  */
@@ -25,7 +25,6 @@ package cn.js.nt.yao.sudokupdf;
 import diuf.sudoku.Grid;
 import diuf.sudoku.generator.Generator;
 import diuf.sudoku.generator.Symmetry;
-import diuf.sudoku.gui.AutoBusy;
 import diuf.sudoku.solver.Rule;
 import diuf.sudoku.solver.Solver;
 import java.awt.BorderLayout;
@@ -47,12 +46,19 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -65,11 +71,14 @@ import javax.swing.event.ChangeListener;
 public class MainFrame extends JFrame {
 
     private Main app;
+    private JProgressBar progress;
 
     MainFrame(Main m) {
+        super("Sudoku PDF - Developed by Yao Chunlin");
         this.app = m;
         initParameters();
         initGUI();
+
     }
     private static final long serialVersionUID = 1L;
     private JButton btnPrint;
@@ -78,60 +87,34 @@ public class MainFrame extends JFrame {
     private EnumSet<Symmetry> symmetries = EnumSet.noneOf(Symmetry.class);
     private Difficulty difficulty = Difficulty.Easy;
     private boolean isExact = true;
-    private int printCount = 4;
-    private GeneratorThread generator = null;
+    private int amount = 4;
+    private GeneratorThread generatorThread = null;
     private List<Grid> sudokuList = new ArrayList<Grid>();
 
-    private void initParameters() {
-        symmetries.add(Symmetry.Orthogonal);
-        symmetries.add(Symmetry.BiDiagonal);
-        symmetries.add(Symmetry.Rotational180);
-        symmetries.add(Symmetry.Rotational90);
-        symmetries.add(Symmetry.Full);
-    }
-
-    private void initGUI() {
-        this.setLayout(new BorderLayout());
-
-        JPanel paramPanel = new JPanel();
-        JPanel commandPanel = new JPanel();
-        this.add(paramPanel, BorderLayout.CENTER);
-        this.add(commandPanel, BorderLayout.SOUTH);
-
+    private void initButtonPane(JPanel commandPanel) {
         // Command pane
         commandPanel.setLayout(new GridLayout(1, 2));
-
         JPanel pnlGenerate = new JPanel();
         pnlGenerate.setLayout(new FlowLayout(FlowLayout.CENTER));
         commandPanel.add(pnlGenerate);
-
         JPanel pnlClose = new JPanel();
         pnlClose.setLayout(new FlowLayout(FlowLayout.CENTER));
         commandPanel.add(pnlClose);
-
         btnPrint = new JButton();
         btnPrint.setFont(new java.awt.Font("Dialog", java.awt.Font.BOLD, 12));
         btnPrint.setText("Print");
-        btnPrint.setMnemonic(KeyEvent.VK_G);
-        btnPrint.setToolTipText(
-                "Print out random Sudoku that matches the given parameters");
+        btnPrint.setMnemonic(KeyEvent.VK_P);
+        btnPrint.setToolTipText("Print out random Sudoku that matches the given parameters");
         btnPrint.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (generator == null) {
+                if (generatorThread == null) {
                     generate();
-                } else {
-                    stop();
                 }
             }
         });
         pnlGenerate.add(btnPrint);
-        lblGenerated = new JLabel("");
-        lblGenerated.setToolTipText(
-                "<html><body><b>Generated</b>&nbsp; count</body></html>");
-        pnlGenerate.add(lblGenerated);
-
         JButton btnClose = new JButton();
         btnClose.setText("Close");
         btnClose.setMnemonic(KeyEvent.VK_C);
@@ -143,21 +126,82 @@ public class MainFrame extends JFrame {
             }
         });
         pnlClose.add(btnClose);
+    }
 
+    private void initGlassPane() {
+        // Glass Pane ,disable input when processing
+        progress = new JProgressBar();
+        JPanel statusPane = new JPanel(new GridLayout(1, 4));
+        statusPane.setOpaque(true);
+        statusPane.add(new JLabel("Please wait..."));
+        statusPane.add(progress);
+        lblGenerated = new JLabel("");
+        lblGenerated.setToolTipText("<html><body><b>Generated</b>&nbsp; count</body></html>");
+        statusPane.add(lblGenerated);
+        JButton cancelButton = new JButton();
+        cancelButton.setText("Cancel");
+        cancelButton.setMnemonic(KeyEvent.VK_ESCAPE);
+        cancelButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (generatorThread != null) {
+                    MainFrame.this.stop();
+                }
+            }
+        });
+        statusPane.add(cancelButton);
+        final List<JComponent> enabledWhenBusy = new ArrayList<JComponent>();
+        final BusyGlassPanel busyGlassPanel = new BusyGlassPanel(this, enabledWhenBusy);
+
+        busyGlassPanel.setLayout(new BorderLayout());
+        busyGlassPanel.setOpaque(false);
+        busyGlassPanel.add(statusPane, BorderLayout.SOUTH);
+        this.setGlassPane(busyGlassPanel);
+        //this.getContentPane().add(statusPane,BorderLayout.NORTH);
+    }
+
+    private void initMenu() {
+        final JMenuBar jMenuBar = new JMenuBar();
+        JMenuItem mi;
+        final JMenu fileMenu = jMenuBar.add(new JMenu("File"));
+        fileMenu.setMnemonic('F');
+        mi = fileMenu.add(new JMenuItem("Close"));
+        mi.setMnemonic('X');
+        mi.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MainFrame.this.close();
+            }
+        });
+        final JMenu helpMenu = jMenuBar.add(new JMenu("Help"));
+        fileMenu.setMnemonic('H');
+        mi = helpMenu.add(new JMenuItem("About"));
+        mi.setMnemonic('B');
+        mi.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JDialog dialog = new AboutDialog(MainFrame.this);
+                dialog.pack();
+                dialog.setVisible(true);
+            }
+        });
+        this.setJMenuBar(jMenuBar);
+    }
+
+    private void initParamPane(JPanel paramPanel) {
         // Parameters pane
         paramPanel.setLayout(new BoxLayout(paramPanel, BoxLayout.Y_AXIS));
-
         JPanel symmetryPanel = new JPanel();
         symmetryPanel.setBorder(new TitledBorder("Allowed symmetry types"));
         paramPanel.add(symmetryPanel);
-
         JPanel difficultyPanel = new JPanel();
         difficultyPanel.setBorder(new TitledBorder("Difficulty"));
         paramPanel.add(difficultyPanel);
-
         // Parameters - Symmetry pane
         symmetryPanel.setLayout(new GridLayout(3, 4));
-
         for (final Symmetry symmetry : Symmetry.values()) {
             final JCheckBox chkSymmetry = new JCheckBox();
             chkSymmetry.setSelected(symmetries.contains(symmetry));
@@ -176,23 +220,16 @@ public class MainFrame extends JFrame {
             });
             symmetryPanel.add(chkSymmetry);
         }
-
         // Parameters - Difficulty
         difficultyPanel.setLayout(new BorderLayout());
-
         JPanel diffChooserPanel = new JPanel();
-        diffChooserPanel.setLayout(new BoxLayout(diffChooserPanel,
-                BoxLayout.X_AXIS));
+        diffChooserPanel.setLayout(new BoxLayout(diffChooserPanel, BoxLayout.X_AXIS));
         difficultyPanel.add(diffChooserPanel, BorderLayout.NORTH);
-
         final JComboBox selDifficulty = new JComboBox();
-
         for (Difficulty d : Difficulty.values()) {
             selDifficulty.addItem(d);
         }
-
-        selDifficulty.setToolTipText(
-                "Choose the difficulty of the Sudoku to generate");
+        selDifficulty.setToolTipText("Choose the difficulty of the Sudoku to generate");
         selDifficulty.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -200,11 +237,8 @@ public class MainFrame extends JFrame {
             }
         });
         diffChooserPanel.add(selDifficulty);
-
-        final JRadioButton chkExactDifficulty = new JRadioButton(
-                "Exact difficulty");
-        chkExactDifficulty.setToolTipText(
-                "Generate a Sudoku with exactly the chosen difficulty");
+        final JRadioButton chkExactDifficulty = new JRadioButton("Exact difficulty");
+        chkExactDifficulty.setToolTipText("Generate a Sudoku with exactly the chosen difficulty");
         chkExactDifficulty.setMnemonic(KeyEvent.VK_E);
         chkExactDifficulty.addActionListener(new ActionListener() {
 
@@ -215,11 +249,8 @@ public class MainFrame extends JFrame {
             }
         });
         diffChooserPanel.add(chkExactDifficulty);
-
-        final JRadioButton chkMaximumDifficulty = new JRadioButton(
-                "Maximum difficulty");
-        chkMaximumDifficulty.setToolTipText(
-                "Generate a Sudoku with at most the chosen difficulty");
+        final JRadioButton chkMaximumDifficulty = new JRadioButton("Maximum difficulty");
+        chkMaximumDifficulty.setToolTipText("Generate a Sudoku with at most the chosen difficulty");
         chkMaximumDifficulty.setMnemonic(KeyEvent.VK_M);
         chkMaximumDifficulty.addActionListener(new ActionListener() {
 
@@ -230,38 +261,33 @@ public class MainFrame extends JFrame {
             }
         });
         diffChooserPanel.add(chkMaximumDifficulty);
-
         ButtonGroup group = new ButtonGroup();
         group.add(chkExactDifficulty);
         group.add(chkMaximumDifficulty);
         chkExactDifficulty.setSelected(true);
+    }
 
-        // Parameters - options
-        JPanel optionPanel = new JPanel();
-        optionPanel.setBorder(new TitledBorder(""));
-        optionPanel.setLayout(new GridLayout(1, 1));
-        paramPanel.add(optionPanel, BorderLayout.NORTH);
+    private void initParameters() {
+        symmetries.add(Symmetry.Orthogonal);
+        symmetries.add(Symmetry.BiDiagonal);
+        symmetries.add(Symmetry.Rotational180);
+        symmetries.add(Symmetry.Rotational90);
+        symmetries.add(Symmetry.Full);
+    }
 
-        JLabel lblPrintCount = new JLabel();
-        lblPrintCount.setText(
-                "<html><body><b>Print out sudoku count:</b></body></html>");
-        optionPanel.add(lblPrintCount);
-        spnPrintCount = new JSpinner();
-        spnPrintCount.setValue(printCount);
-        spnPrintCount.setToolTipText("Number of print out sudoku.");
-        spnPrintCount.addChangeListener(new ChangeListener() {
+    private void initGUI() {
 
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                printCount = (Integer) spnPrintCount.getValue();
+        initMenu();
+        this.setLayout(new BorderLayout());
 
-                if (printCount < 1) {
-                    printCount = 1;
-                    spnPrintCount.setValue(printCount);
-                }
-            }
-        });
-        optionPanel.add(spnPrintCount);
+        JPanel paramPanel = new JPanel();
+        JPanel buttonPane = new JPanel();
+        this.add(paramPanel, BorderLayout.CENTER);
+        this.add(buttonPane, BorderLayout.SOUTH);
+        initButtonPane(buttonPane);
+        initParamPane(paramPanel);
+        initPrintPane(paramPanel);
+        initGlassPane();
     }
 
     private void generate() {
@@ -283,28 +309,64 @@ public class MainFrame extends JFrame {
 
         List<Symmetry> symList = new ArrayList<Symmetry>(symmetries);
 
+        if (sudokuList.size() > 0) {
+            String[] options = {"Resume", "Restart", "Cancel"};
+            int result = JOptionPane.showOptionDialog(this, "Resume the previouse job.", "Resume or restart", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+            switch (result) {
+                case 0:
+                    break;
+                case 1:
+                    sudokuList.clear();
+                    break;
+                case 2:
+                    return;
+            }
+        }
+        progress.setMaximum(amount);
+        progress.setMinimum(0);
         // Generate grid
-        generator = new GeneratorThread(symList, minDifficulty, maxDifficulty,
-                printCount);
-        generator.start();
+        generatorThread = new GeneratorThread(symList, minDifficulty, maxDifficulty,
+                amount);
+        generatorThread.start();
+    }
+
+    private void initPrintPane(JPanel paramPanel) {
+        // Parameters - print
+        JPanel printPanel = new JPanel();
+        printPanel.setBorder(new TitledBorder("Print option"));
+        printPanel.setLayout(new GridLayout(1, 1));
+        paramPanel.add(printPanel, BorderLayout.NORTH);
+        JLabel lblPrintCount = new JLabel();
+        lblPrintCount.setText("Amount of puzzles:");
+        printPanel.add(lblPrintCount);
+        spnPrintCount = new JSpinner(new SpinnerNumberModel(4, 1, Integer.MAX_VALUE, 1));
+        spnPrintCount.setValue(amount);
+        spnPrintCount.setToolTipText("Amount of puzzles");
+        spnPrintCount.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                amount = (Integer) spnPrintCount.getValue();
+            }
+        });
+        printPanel.add(spnPrintCount);
     }
 
     private void stop() {
-        if ((generator != null) && generator.isAlive()) {
-            generator.interrupt();
-
+        if ((generatorThread != null) && generatorThread.isAlive()) {
+            generatorThread.cancel();
             try {
-                generator.join();
+                generatorThread.join();
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
         }
 
-        generator = null;
+        generatorThread = null;
     }
 
     private void printOut() {
-        if (sudokuList.size() >= printCount) {
+        if (sudokuList.size() >= amount) {
             new Thread() {
 
                 @Override
@@ -341,7 +403,7 @@ public class MainFrame extends JFrame {
 
     private void close() {
         stop();
-        this.dispose();;
+        this.dispose();
     }
 
     /**
@@ -355,6 +417,7 @@ public class MainFrame extends JFrame {
         private int curSize;
         private Generator generator;
         private int printCount;
+        private boolean canceled = false;
 
         public GeneratorThread(List<Symmetry> symmetries, double minDifficulty,
                 double maxDifficulty, int printCount) {
@@ -365,9 +428,9 @@ public class MainFrame extends JFrame {
             curSize = sudokuList.size();
         }
 
-        @Override
-        public void interrupt() {
-            generator.interrupt();
+        public void cancel() {
+            this.canceled = true;
+            this.generator.interrupt();
         }
 
         @Override
@@ -375,9 +438,7 @@ public class MainFrame extends JFrame {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    AutoBusy.setBusy(MainFrame.this, true);
-                    AutoBusy.setBusy(btnPrint, false);
-                    btnPrint.setText("Stop");
+                    MainFrame.this.getGlassPane().setVisible(true);
                 }
             });
             generator = new Generator();
@@ -393,29 +454,31 @@ public class MainFrame extends JFrame {
                             lblGenerated.setText(String.format(
                                     "<html><body>&nbsp;&nbsp;%d&nbsp;<i>Generated</i></body></html>",
                                     sudokuList.size()));
+                            progress.setValue(sudokuList.size());
                         }
                     }
                 });
+                if (this.canceled == true) {
+                    break;
+                }
             }
 
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
                     if (MainFrame.this.isVisible()) {
-                        AutoBusy.setBusy(MainFrame.this, false);
-                        btnPrint.setText("Print");
                         MainFrame.this.printOut();
+                        MainFrame.this.getGlassPane().setVisible(false);
                     }
                 }
             });
-            MainFrame.this.generator = null;
+            MainFrame.this.generatorThread = null;
         }
     }
 
     private enum Difficulty {
 
-        Easy(1.0,
-        1.2), Medium(1.3, 1.5), Hard(1.6, 2.5), Fiendish(2.6, 6.0),
+        Easy(1.0, 1.2), Medium(1.3, 1.5), Hard(1.6, 2.5), Fiendish(2.6, 6.0),
         Diabolical(6.1, 11.0);
         private final double maxDificulty;
         private final double minDifficulty;

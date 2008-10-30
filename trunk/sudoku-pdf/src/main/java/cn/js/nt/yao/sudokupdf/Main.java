@@ -16,18 +16,22 @@
  *  limitations under the License.
  *  under the License.
  * ------------------------------------------------------------------------
- * $Header$
+ * $Id$
  * $Revision$
  * $Date$
  */
-
 package cn.js.nt.yao.sudokupdf;
 
+import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.io.File;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
-
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * Sudoku PDF
@@ -35,6 +39,7 @@ import javax.swing.SwingUtilities;
  * @author Yao Chunlin
  */
 public class Main {
+
     private PDFRender render = new PDFRender(new A4Layout());
 
     Main() {
@@ -42,6 +47,13 @@ public class Main {
 
     public static void main(String[] args) {
         Main m = new Main();
+        try {
+            LookAndFeel laf = new NimbusLookAndFeel();
+            UIManager.setLookAndFeel(laf);
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         m.startApp(m);
     }
 
@@ -53,14 +65,15 @@ public class Main {
 
     private void startApp(final Main m) {
         SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    JFrame main = new MainFrame(m);
-                    main.setLocation(200, 200);
-                    main.pack();
-                    main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    main.setVisible(true);
-                }
-            });
+
+            @Override
+            public void run() {
+                JFrame main = new MainFrame(m);
+                main.setLocation(200, 200);
+                main.pack();
+                main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                main.setVisible(true);
+            }
+        });
     }
 }
