@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>diuf.sudoku</groupId>
+	<artifactId>sudoku-explainer</artifactId>
+	<version>0.96</version>
+
+	<name>Sudoku Explainer</name>
+	<description>
+		The Sudoku Explainer is a Sudoku solver written in Java. It explains how to solve any sudoku puzzle in an interactive way: give it a sudoku that has a unique solution, and it will solve it step by step. At each step, a description of the technique that is used, with a graphical illustration, is given. 
+	</description>
+	<url>http://diuf.unifr.ch/people/juillera/Sudoku/Sudoku.html</url>
+
+	<licenses>
+		<license>
+			<name>GNU Library or Lesser General Public License (LGPL)</name>
+			<url>http://www.gnu.org/licenses/lgpl.html</url>
+		</license>
+	</licenses>
+
+</project>
+

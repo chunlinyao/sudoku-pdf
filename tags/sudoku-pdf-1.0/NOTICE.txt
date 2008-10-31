@@ -1,0 +1,16 @@
+Sudoku pdf
+
+Copyright (C) 2008 by Yao Chunlin.
+
+This product includes itext 
+http://www.lowagie.com/iText/
+Copyright 1999, 2000, 2001, 2002 by Bruno Lowagie.
+
+This product includes sudokuexplainer
+http://diuf.unifr.ch/people/juillera/Sudoku/Sudoku.html
+Copyright (C) 2006-2007 Nicolas Juillerat
+
+The pdf use font from URW
+http://www.urwpp.de/deutsch/home.html
+Copyright (URW)++,Copyright 1999 by (URW)++ Design & Development; 
+Cyrillic glyphs added by Valek Filippov (C) 2001-2005
