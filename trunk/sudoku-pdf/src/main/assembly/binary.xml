@@ -1,0 +1,30 @@
+
+<assembly>
+    <id>bin</id>
+    <formats>
+        <format>jar</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory/>
+            <unpack>true</unpack>
+            <excludes>
+            </excludes>
+        </dependencySet>
+    </dependencySets>
+    <fileSets>
+        <fileSet>
+            <includes>
+                <include>README*</include>
+                <include>LICENSE*</include>
+                <include>NOTICE*</include>
+                <include>TODO*</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>thirdparty</directory>
+        </fileSet>
+    </fileSets>
+</assembly>
+
