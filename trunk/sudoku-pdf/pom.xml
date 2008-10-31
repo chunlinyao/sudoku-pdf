@@ -4,7 +4,7 @@
     <groupId>cn.js.nt.yao</groupId>
     <artifactId>sudoku-pdf</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <name>Sudoku PDF</name>
     <url>http://code.google.com/p/sudoku-pdf</url>
     <description>这是我用来打印数独游戏的程序。</description>
@@ -23,9 +23,9 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:svn:http://sudoku-pdf.googlecode.com/svn/trunk/</connection>
-        <developerConnection>scm:svn:https://sudoku-pdf.googlecode.com/svn/trunk/</developerConnection>
-        <url>http://code.google.com/p/sudoku-pdf/source/browse/</url>
+        <connection>scm:svn:http://sudoku-pdf.googlecode.com/svn/tags/sudoku-pdf-1.0</connection>
+        <developerConnection>scm:svn:https://sudoku-pdf.googlecode.com/svn/tags/sudoku-pdf-1.0</developerConnection>
+        <url>http://code.google.com/p/sudoku-pdf/source/browse/tags/sudoku-pdf-1.0</url>
     </scm>
     <repositories>
         <repository>
