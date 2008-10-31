@@ -26,6 +26,8 @@ import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
@@ -36,13 +38,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+
 /**
  * Sudoku PDF
  *
  * @author Yao Chunlin
  */
 public class Main {
-
     Main() {
     }
 
@@ -59,8 +61,16 @@ public class Main {
         m.startApp(m);
     }
 
-    public File createPDF(List<PrintRecord> sudokuList) {
-        PDFRender render = new PDFRender(new A4Layout());
+    public File createPDF(List<PrintRecord> sudokuList, String layoutName) {
+        Layout layout;
+
+        if ("Letter".equals(layoutName)) {
+            layout = new LetterLayout();
+        } else {
+            layout = new A4Layout();
+        }
+
+        PDFRender render = new PDFRender(layout);
 
         render.setData(sudokuList);
 
@@ -69,18 +79,19 @@ public class Main {
 
     private void startApp(final Main m) {
         SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    final JFrame main = new MainFrame(m);
+                    main.setLocation(200, 200);
+                    main.pack();
 
-            @Override
-            public void run() {
-                JFrame main = new MainFrame(m);
-                main.setLocation(200, 200);
-                main.pack();
-                main.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                main.setLocation((int) (screenSize.getWidth() - main.getWidth()) / 2,
+                    Dimension screenSize = Toolkit.getDefaultToolkit()
+                                                  .getScreenSize();
+                    main.setLocation((int) (screenSize.getWidth()
+                        - main.getWidth()) / 2,
                         (int) (screenSize.getHeight() - main.getHeight()) / 2);
-                main.setVisible(true);
-            }
-        });
+                    main.setVisible(true);
+                }
+            });
     }
 }

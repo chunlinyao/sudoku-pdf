@@ -1,3 +1,4 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>cn.js.nt.yao</groupId>
@@ -8,11 +9,11 @@
     <url>http://code.google.com/p/sudoku-pdf</url>
     <description>这是我用来打印数独游戏的程序。</description>
     <licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
     </licenses>
     <developers>
         <developer>
@@ -26,14 +27,14 @@
         <developerConnection>scm:svn:https://sudoku-pdf.googlecode.com/svn/trunk/</developerConnection>
         <url>http://code.google.com/p/sudoku-pdf/source/browse/</url>
     </scm>
-                <repositories>
-                <repository>
-                    <id>project</id>
-                    <name>Project Repository</name>
-                    <url>file:///${basedir}/lib</url>
-                    <layout>default</layout>
-                </repository>
-            </repositories>
+    <repositories>
+        <repository>
+            <id>project</id>
+            <name>Project Repository</name>
+            <url>file:///${basedir}/lib</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -56,12 +57,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit-dep</artifactId>
-			<version>4.4</version>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit-dep</artifactId>
+            <version>4.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -164,8 +165,29 @@
                     </execution>
                 </executions>
             </plugin>
-            
-
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${mainclass}</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptors>
+                        <descriptor>src/main/assembly/source.xml</descriptor>
+                        <descriptor>src/main/assembly/binary.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <reporting>

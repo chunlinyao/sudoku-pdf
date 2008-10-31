@@ -49,9 +49,9 @@ class PDFRender {
     private Document doc;
     private PdfWriter writer;
     private Graphics2D g;
-    private A4Layout layout;
+    private Layout layout;
 
-    public PDFRender(A4Layout layout) {
+    public PDFRender(Layout layout) {
         this.layout = layout;
     }
 
@@ -252,7 +252,7 @@ class PDFRender {
     /**
      * @return the layout
      */
-    public A4Layout getLayout() {
+    public Layout getLayout() {
         return layout;
     }
 

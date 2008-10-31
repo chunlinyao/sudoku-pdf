@@ -1,1 +1,1 @@
-﻿* Reimplement MainFram ,remove code from SudokuExplainer.
+﻿* 
